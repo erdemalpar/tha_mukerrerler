@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import './DataTable.css';
@@ -15,6 +15,27 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
   const [pageSize, setPageSize] = useState<number>(20);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        // Toplam yükseklik - Header - Footerlar = kalan alan
+        const availableHeight = window.innerHeight - 280;
+        const rowHeight = 44; 
+        const calcSize = Math.max(3, Math.floor(availableHeight / rowHeight));
+        setPageSize(calcSize);
+      } else {
+        setPageSize(prev => (prev < 20 ? 20 : prev));
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const totalPages = Math.ceil(data.length / pageSize);
 
@@ -120,7 +141,8 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
 
         <div className="page-size-selector">
           <label>Kayıt Sayısı: </label>
-          <select value={pageSize} onChange={handlePageSizeChange}>
+          <select value={pageSize} onChange={handlePageSizeChange} disabled={isMobile}>
+            {isMobile && <option value={pageSize}>Otomatik ({pageSize})</option>}
             <option value={20}>20</option>
             <option value={50}>50</option>
             <option value={100}>100</option>

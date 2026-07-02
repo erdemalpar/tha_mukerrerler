@@ -35,6 +35,6 @@
 
 @media (max-width: 768px) {
   .content-area {
-    padding: 12px;
+    padding: 0;
   }
 }
