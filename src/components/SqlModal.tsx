@@ -1,0 +1,116 @@
+import React from 'react';
+import { X } from 'lucide-react';
+import './SqlModal.css';
+
+interface SqlModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const THA_SQL = `
+select 
+	tib.ilad ,tib.ilcead, tib.mahallead,p.adano,p.parselno, ROUND((p.kadastroalan)::numeric, 2) as yuzolcum
+	,tbl2.basvuruno as kad_basvuruno,tbl2.olusturmatarihi as kad_basvurualinmatarihi
+	,tbl2.fenkayitno as kad_fenkayitno,tbl2.fenkayittarih as kad_fenkayittarih
+	,tbl2.tesciltarih as tapu_tesciltarih,tbl2.tescilyevmiyeno as tapu_tescilyevmiyeno
+       ,p.geom 
+from islem.islemolusanparseller iop
+inner join parseller p on p.id=iop.megsisparselref 
+inner join tapuidaribirimler tib on tib.mahalleid=p.tapumahalleref 
+inner join (
+ SELECT * FROM dblink(
+        'host=TK-PGDB.tkgm.gov.tr port=**** user=******* password=****** dbname=tkgm_fenkayit',
+        'SELECT fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
+         FROM islemfenkayit ifk
+         INNER JOIN fenkayit fk ON fk.id = ifk.fenkayitref 
+         WHERE ifk.islemtanimref = 1342 
+           AND ifk.durum = 1 
+           AND fk.durum = 1 
+           AND fk.asamadurum = 6'
+    ) AS tbl(basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
+) tbl2 on  tbl2.islemfenkayitref = iop.islemfenkayitref
+where iop.durum =3 and p.durum =3
+order by tib.ilad , tib.ilcead, tib.mahallead ,tbl2.basvuruno;`;
+
+const MUKERRER_SQL = `
+WITH uzak_veri AS (
+    -- dblink sorgusunu CTE (With) içine alarak lokalde sadece 1 kere çalıştırır
+    SELECT * FROM dblink(
+        'host=TK-PGDB.tkgm.gov.tr port=**** user=********* password=******** dbname=tkgm_fenkayit',
+        'SELECT fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
+         FROM islemfenkayit ifk
+         INNER JOIN fenkayit fk ON fk.id = ifk.fenkayitref 
+         WHERE ifk.islemtanimref = 1342 
+           AND ifk.durum = 1 
+           AND fk.durum = 1 
+           AND fk.asamadurum = 6'
+    ) AS tbl(basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
+)
+SELECT 
+	tib.ilad,
+    tib.ilcead,
+    tib.mahallead,  
+   -- pk.id AS kesisen_parsel_id,
+    p.adano AS "tha_ihdas_adano",
+    p.parselno AS "tha_ihdas_parselno",
+    pk.adano as mukerrer_adano,
+    pk.parselno as mukerrer_parselno,
+     ROUND(
+        ST_Area(ST_Intersection(p.geom, pk.geom)::geography)::numeric,
+        2
+    ) AS kesisen_alan_m2,
+	tbl2.basvuruno,
+    tbl2.olusturmatarihi as kad_basvuru_olusturmatarihi, 
+    tbl2.fenkayitno as kad_fenkayitno,
+    tbl2.fenkayittarih as kad_fenkayittarih,
+    tbl2.tescilyevmiyeno,
+    tbl2.tesciltarih,
+    iop.megsisparselref AS olusanparselid,
+    p.geom as tha_geom,
+    pk.durum as mukerrer_parsel_durum,
+    pk.onaydurum as mukerrer_parsel_onaydurum,
+    pk.geom as mukerrer_parsel_geom
+FROM islem.islemolusanparseller iop 
+INNER JOIN uzak_veri tbl2 ON tbl2.islemfenkayitref = iop.islemfenkayitref
+INNER JOIN parseller p ON iop.megsisparselref = p.id
+INNER JOIN parseller pk ON p.geom && pk.geom AND ST_Intersects(p.geom, pk.geom) AND NOT ST_Touches(p.geom, pk.geom) and pk.durum=3 and pk.onaydurum=1 AND pk.id <> p.id 
+INNER JOIN tapuidaribirimler tib ON tib.mahalleid = pk.tapumahalleref
+WHERE iop.durum = 3
+  AND p.durum = 3 
+  AND p.onaydurum = 1
+and ST_Area(ST_Intersection(p.geom, pk.geom)::geography) > 100;`;
+
+const SqlModal: React.FC<SqlModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="sql-modal-overlay" onClick={onClose}>
+      <div className="sql-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="sql-modal-header">
+          <h2>Örnek SQL Sorguları</h2>
+          <button className="close-btn" onClick={onClose}><X size={24} /></button>
+        </div>
+
+        <div className="sql-modal-body">
+          <div className="sql-panel left-panel">
+            <h3>Tescil Edilen THA'ların Örnek SQL'i</h3>
+            <div className="code-container">
+              <pre><code>{THA_SQL}</code></pre>
+            </div>
+          </div>
+
+          <div className="divider"></div>
+
+          <div className="sql-panel right-panel">
+            <h3>Mükerrer Parselleri Bulmak İçin Örnek SQL</h3>
+            <div className="code-container">
+              <pre><code>{MUKERRER_SQL}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SqlModal;

@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-color: #f5f5f5;
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(163, 163, 163, 0.3);
+  --text-primary: #111111;
+  --text-secondary: #5e5e5e;
+  --primary-color: #c4a484;
+  --primary-hover: #a68a6b;
+  --success-color: #7b8a7b;
+  --danger-color: #8c5a5a;
+  --border-color: #d4d4d4;
+  --glass-shadow: 0 8px 32px 0 rgba(17, 17, 17, 0.05);
+  --glass-blur: blur(12px);
+  --header-height: 70px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  background-image: radial-gradient(circle at top right, #e5d9c5, transparent 40%),
+                    radial-gradient(circle at bottom left, #dcdcdc, transparent 40%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 12px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #a3a3a3;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #808080;
+}
+
+button {
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
