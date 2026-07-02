@@ -37,26 +37,15 @@ interface RightPanelMapProps {
   baseLayer: MapBaseLayer;
 }
 
-const ZoomIndicator = () => {
-  const [zoomLevel, setZoomLevel] = useState<number>(6);
+const ZoomTracker = ({ onZoomChange }: { onZoomChange: (z: number) => void }) => {
   const map = useMapEvents({
-    zoom: () => {
-      const currentZoom = map.getZoom();
-      document.documentElement.style.setProperty('--map-current-zoom', currentZoom.toString());
-      setZoomLevel(currentZoom);
-    }
+    zoomend: () => onZoomChange(map.getZoom()),
+    moveend: () => onZoomChange(map.getZoom()),
   });
   useEffect(() => {
-    const currentZoom = map.getZoom();
-    document.documentElement.style.setProperty('--map-current-zoom', currentZoom.toString());
-    setZoomLevel(currentZoom);
-  }, [map]);
-  
-  return (
-    <div className="zoom-indicator">
-      Zoom: {zoomLevel.toFixed(1)}
-    </div>
-  );
+    onZoomChange(map.getZoom());
+  }, [map, onZoomChange]);
+  return null;
 };
 
 const parseWKT = (wkt: string) => {
@@ -91,6 +80,11 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
   const [panelWidth, setPanelWidth] = useState(40);
   const [parsedFeatures, setParsedFeatures] = useState<{geoJson: any, color: string, label?: string, adaParsel?: string, isHatched?: boolean, areaText?: string, centroid?: [number, number]}[]>([]);
   const [parsedFocusFeatures, setParsedFocusFeatures] = useState<{geoJson: any}[]>([]);
+  const [currentZoom, setCurrentZoom] = useState<number>(6);
+
+  const handleZoomChange = React.useCallback((z: number) => {
+    setCurrentZoom(z);
+  }, []);
 
   useEffect(() => {
     if (isOpen && features.length > 0) {
@@ -181,7 +175,18 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
   };
 
   const renderFeature = (f: any, idx: number) => {
-    const offsetLatLng: [number, number] | null = f.centroid ? [f.centroid[0] + 0.0003, f.centroid[1] + 0.0008] : null;
+    const scale = currentZoom >= 18 ? 1 : Math.pow(2, currentZoom - 18);
+    const showCard = currentZoom >= 16;
+
+    let offsetLatLng: [number, number] | null = null;
+    if (f.centroid) {
+      if (f.isHatched) {
+         offsetLatLng = [f.centroid[0] + 0.0003, f.centroid[1] + 0.0008];
+      } else {
+         offsetLatLng = f.centroid;
+      }
+    }
+
     return (
       <React.Fragment key={idx}>
         <GeoJSON 
@@ -228,17 +233,36 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
           </Popup>
         </GeoJSON>
         
-        {f.isHatched && f.centroid && offsetLatLng && f.areaText && (
+        {offsetLatLng && (
           <>
-            <Polyline positions={[f.centroid, offsetLatLng]} color="#3b82f6" weight={2} dashArray="4" />
-            <Marker 
-              position={offsetLatLng} 
-              icon={L.divIcon({ 
-                className: 'area-label-icon', 
-                html: `<div class="area-text-box">Kesişen Alan<strong>${f.areaText}</strong></div>`,
-                iconSize: [100, 32]
-              })} 
-            />
+            {showCard ? (
+              <>
+                {f.isHatched && <Polyline positions={[f.centroid!, offsetLatLng]} color="#3b82f6" weight={2} dashArray="4" />}
+                <Marker 
+                  position={offsetLatLng} 
+                  icon={L.divIcon({ 
+                    className: 'area-label-icon', 
+                    html: `
+                      <div class="area-text-box" style="transform: scale(${scale}); transform-origin: ${f.isHatched ? 'top left' : 'center center'}; transition: transform 0.2s ease; border-color: ${f.color}; color: ${f.color};">
+                        <span style="font-size: 9px; color: #6b7280; text-transform: uppercase;">${f.label || (f.isHatched ? 'Kesişen Alan' : '')}</span>
+                        <strong style="display: block; font-size: 12px; color: #111827; margin-top: 1px;">${f.adaParsel || ''}</strong>
+                        ${f.areaText ? `<div style="font-size: 10px; margin-top: 2px;">${f.areaText}</div>` : ''}
+                      </div>`,
+                    iconSize: [100, 32]
+                  })} 
+                />
+              </>
+            ) : (
+              <Marker 
+                position={f.centroid!} 
+                icon={L.divIcon({ 
+                  className: 'custom-small-pin', 
+                  html: `<div style="width: 14px; height: 14px; background: ${f.color}; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transform: scale(${Math.max(0.3, currentZoom / 15)}); transform-origin: center;"></div>`,
+                  iconSize: [14, 14],
+                  iconAnchor: [7, 7]
+                })} 
+              />
+            )}
           </>
         )}
       </React.Fragment>
@@ -291,7 +315,10 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
               </defs>
             </svg>
             <MapController focusFeatures={parsedFocusFeatures} />
-            <ZoomIndicator />
+            <ZoomTracker onZoomChange={handleZoomChange} />
+            <div className="zoom-indicator" style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(255,255,255,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: '#374151', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', zIndex: 1000, border: '1px solid rgba(0,0,0,0.1)' }}>
+              Zoom: {currentZoom.toFixed(1)}
+            </div>
 
             <LayersControl position="topright" collapsed={false}>
               {tescilliFeatures.length > 0 && (
