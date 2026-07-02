@@ -24,8 +24,9 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
       if (mobile) {
         // Toplam yükseklik - Header - Footerlar = kalan alan
         const availableHeight = window.innerHeight - 280;
-        const rowHeight = 44; 
-        const calcSize = Math.max(3, Math.floor(availableHeight / rowHeight));
+        const rowHeight = 44;
+        // Dikey scroll çıkmasını kesin olarak önlemek için 1 eksiltiyoruz
+        const calcSize = Math.max(3, Math.floor(availableHeight / rowHeight) - 1);
         setPageSize(calcSize);
       } else {
         setPageSize(prev => (prev < 20 ? 20 : prev));
@@ -164,7 +165,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
                     onChange={handleSelectAllCurrentPage}
                     title="Sayfadaki tümünü seç"
                   />
-                  <span>Harita</span>
+                  <span></span>
                 </div>
               </th>
               {columns.map(col => <th key={col.key}>{col.label}</th>)}

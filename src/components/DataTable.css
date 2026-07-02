@@ -241,6 +241,11 @@
 }
 
 @media (max-width: 768px) {
+  .table-wrapper {
+    overflow-y: hidden;
+    overflow-x: auto;
+  }
+
   .table-header-controls {
     flex-direction: row;
     align-items: center;
