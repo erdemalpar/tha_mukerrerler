@@ -11,12 +11,10 @@ interface HeaderProps {
   setBaseLayer: (layer: MapBaseLayer) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  showAllGeometries: boolean;
-  setShowAllGeometries: (show: boolean) => void;
   onOpenSqlModal?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, baseLayer, setBaseLayer, searchQuery, setSearchQuery, showAllGeometries, setShowAllGeometries, onOpenSqlModal }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, baseLayer, setBaseLayer, searchQuery, setSearchQuery, onOpenSqlModal }) => {
   const [isLayersMenuOpen, setIsLayersMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -46,17 +44,6 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, baseLayer, set
       </div>
 
       <nav className="header-nav">
-        <div className="header-checkbox">
-          <label>
-            <input
-              type="checkbox"
-              checked={showAllGeometries}
-              onChange={(e) => setShowAllGeometries(e.target.checked)}
-            />
-            Tüm Geom
-          </label>
-        </div>
-
         <button
           className={`nav-btn ${activeTab === 'mukerrer' ? 'active' : ''}`}
           onClick={() => setActiveTab('mukerrer')}

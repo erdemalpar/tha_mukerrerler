@@ -341,8 +341,6 @@ function App() {
         setBaseLayer={setBaseLayer}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        showAllGeometries={showAllGeometries}
-        setShowAllGeometries={setShowAllGeometries}
         onOpenSqlModal={() => setIsSqlModalOpen(true)}
       />
 
@@ -381,6 +379,8 @@ function App() {
           features={showAllGeometries ? allFeatures : mapFeatures}
           focusFeatures={mapFeatures}
           baseLayer={baseLayer}
+          showAllGeometries={showAllGeometries}
+          setShowAllGeometries={setShowAllGeometries}
           onClose={() => setIsMapPanelOpen(false)}
         />
       </main>

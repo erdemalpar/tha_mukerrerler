@@ -35,6 +35,8 @@ interface RightPanelMapProps {
   features: MapFeature[];
   focusFeatures?: MapFeature[];
   baseLayer: MapBaseLayer;
+  showAllGeometries: boolean;
+  setShowAllGeometries: (show: boolean) => void;
 }
 
 const ZoomTracker = ({ onZoomChange }: { onZoomChange: (z: number) => void }) => {
@@ -75,7 +77,7 @@ const MapController = ({ focusFeatures }: { focusFeatures?: { geoJson: any }[] }
   return null;
 };
 
-const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFeatures, baseLayer, onClose }) => {
+const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFeatures, baseLayer, onClose, showAllGeometries, setShowAllGeometries }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelWidth, setPanelWidth] = useState(40);
   const [parsedFeatures, setParsedFeatures] = useState<{geoJson: any, color: string, label?: string, adaParsel?: string, isHatched?: boolean, areaText?: string, centroid?: [number, number]}[]>([]);
@@ -285,9 +287,20 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
       
       <div className="panel-header">
         <h3>Harita Görünümü</h3>
-        <button className="close-btn" onClick={onClose}>
-          <X size={20} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', cursor: 'pointer', background: 'rgba(0,0,0,0.05)', padding: '4px 10px', borderRadius: '6px' }}>
+            <input
+              type="checkbox"
+              checked={showAllGeometries}
+              onChange={(e) => setShowAllGeometries(e.target.checked)}
+              style={{ accentColor: 'var(--primary-color)', width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            Tüm Geom
+          </label>
+          <button className="close-btn" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
       </div>
       
       <div className="map-container">
