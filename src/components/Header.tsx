@@ -40,8 +40,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, baseLayer, set
   return (
     <header className="app-header glass-panel">
       <div className="header-logo">
-        <AnimatedLogo />
+        <AnimatedLogo direction="right" />
         <h1>Tescil Harici Alanlar</h1>
+        <AnimatedLogo direction="left" />
       </div>
 
       <nav className="header-nav">

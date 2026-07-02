@@ -2,7 +2,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.animated-logo-right {
   margin-right: 12px;
+}
+
+.animated-logo-left {
+  margin-left: 12px;
+  transform: scaleX(-1);
 }
 
 .animated-logo svg {
