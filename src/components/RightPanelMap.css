@@ -35,38 +35,38 @@
   border: 1px solid rgba(0,0,0,0.1);
 }
 
-/* Custom Tooltip Labels that scale with zoom */
+/* Custom Tooltip Labels */
 .leaflet-tooltip.custom-map-label {
-  background-color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   color: #1f2937;
-  font-family: inherit;
-  
-  /* Scale font size based on current zoom variable, assuming base size at zoom 15 */
-  font-size: calc(var(--map-current-zoom, 15) * 0.7px);
-  padding: calc(var(--map-current-zoom, 15) * 0.2px) calc(var(--map-current-zoom, 15) * 0.4px);
-  border-radius: 4px;
-  
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
   text-align: center;
-  transition: font-size 0.2s, padding 0.2s;
   pointer-events: none;
+  backdrop-filter: blur(4px);
 }
 
 .leaflet-tooltip.custom-map-label::before {
-  display: none; /* Hide the arrow */
+  border-top-color: rgba(255, 255, 255, 0.95);
 }
 
 .tooltip-title {
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 2px;
-  color: var(--primary-color);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
 }
 
 .tooltip-desc {
-  font-weight: 500;
-  font-size: 0.9em;
-  color: #4b5563;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
 }
 
 /* Intersection area styling */
@@ -76,21 +76,27 @@
 }
 
 .area-text-box {
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid #3b82f6;
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 4px;
+  padding: 2px 6px;
   color: #1e3a8a;
-  font-size: 13px;
+  font-size: 10px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
   white-space: nowrap;
   pointer-events: none;
+  backdrop-filter: blur(2px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .area-text-box strong {
-  font-size: 14px;
+  font-size: 12px;
   color: #2563eb;
+  font-weight: 700;
+  display: block;
+  margin-top: 1px;
 }
 
 .right-panel-map.open {
@@ -187,4 +193,21 @@
     height: 100%;
     z-index: 1000;
   }
+}
+
+/* Layer Control Checkbox Colors */
+.leaflet-control-layers-overlays label:has(.layer-lbl[data-color="#16a34a"]) input[type="checkbox"] {
+  accent-color: #16a34a;
+}
+
+.leaflet-control-layers-overlays label:has(.layer-lbl[data-color="#9333ea"]) input[type="checkbox"] {
+  accent-color: #9333ea;
+}
+
+.leaflet-control-layers-overlays label:has(.layer-lbl[data-color="#ea580c"]) input[type="checkbox"] {
+  accent-color: #ea580c;
+}
+
+.leaflet-control-layers-overlays label:has(.layer-lbl[data-color="#3b82f6"]) input[type="checkbox"] {
+  accent-color: #3b82f6;
 }

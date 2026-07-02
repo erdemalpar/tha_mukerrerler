@@ -102,13 +102,15 @@ function App() {
             const poly2 = turf.feature(geo2 as any);
             const intersection = turf.intersect(turf.featureCollection([poly1, poly2]));
             if (intersection) {
-              const area = turf.area(intersection);
+              const displayArea = row.kesisen_alan_m2 != null && String(row.kesisen_alan_m2).trim() !== ''
+                ? `${Number(row.kesisen_alan_m2).toLocaleString('tr-TR')} m²`
+                : `${Math.round(turf.area(intersection)).toLocaleString('tr-TR')} m²`;
               const center = turf.centroid(intersection);
               features.push({
                 geoJson: intersection.geometry,
                 color: '#3b82f6',
                 isHatched: true,
-                areaText: `${Math.round(area).toLocaleString('tr-TR')} m²`,
+                areaText: displayArea,
                 centroid: [center.geometry.coordinates[1], center.geometry.coordinates[0]] as [number, number]
               });
             }
@@ -141,7 +143,7 @@ function App() {
       if (checked) newChecked.add(rowKey);
       else newChecked.delete(rowKey);
     });
-    
+
     if (newChecked.size > 0) setIsMapPanelOpen(true);
     else setIsMapPanelOpen(false);
     setCheckedRowIds(newChecked);
@@ -163,40 +165,43 @@ function App() {
       if (activeTab === 'tha') {
         if (row.geom) {
           try {
-            if(parse(row.geom)) {
-               features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}` }); // Green for THA
+            if (parse(row.geom)) {
+              features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}` }); // Green for THA
             } else { console.warn(`Tescilli THA geometri bozuk/eksik: ${row.id}`); }
-          } catch(e) { console.warn(`Tescilli THA parse edilemedi: ${row.id}`); }
+          } catch (e) { console.warn(`Tescilli THA parse edilemedi: ${row.id}`); }
         }
-        
+
         // Find matching mukerrer geometries
         const match = mukerrerData.filter(m => String(m.tha_ihdas_adano).trim() === String(row.adano).trim() && String(m.tha_ihdas_parselno).trim() === String(row.parselno).trim());
         match.forEach(m => {
           if (m.mukerrer_parsel_geom) {
-             try {
-                if(parse(m.mukerrer_parsel_geom)) {
-                   features.push({ wkt: m.mukerrer_parsel_geom, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${m.mukerrer_adano}/${m.mukerrer_parselno}` });
-                   
-                   const geo1 = parse(row.geom);
-                   const geo2 = parse(m.mukerrer_parsel_geom);
-                   if (geo1 && geo2) {
-                     const poly1 = turf.feature(geo1 as any);
-                     const poly2 = turf.feature(geo2 as any);
-                     const intersection = turf.intersect(turf.featureCollection([poly1, poly2]));
-                     if (intersection) {
-                       const area = turf.area(intersection);
-                       const center = turf.centroid(intersection);
-                       features.push({
-                         geoJson: intersection.geometry,
-                         color: '#3b82f6',
-                         isHatched: true,
-                         areaText: `${Math.round(area).toLocaleString('tr-TR')} m²`,
-                         centroid: [center.geometry.coordinates[1], center.geometry.coordinates[0]] as [number, number]
-                       });
-                     }
-                   }
-                } else { console.warn(`Mükerrer geometri bozuk/eksik: ${m.id}`); }
-             } catch(e) { console.warn(`Mükerrer geometri parse edilemedi: ${m.id}`); }
+            try {
+              if (parse(m.mukerrer_parsel_geom)) {
+                features.push({ wkt: m.mukerrer_parsel_geom, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${m.mukerrer_adano}/${m.mukerrer_parselno}` });
+
+                const geo1 = parse(row.geom);
+                const geo2 = parse(m.mukerrer_parsel_geom);
+                if (geo1 && geo2) {
+                  const poly1 = turf.feature(geo1 as any);
+                  const poly2 = turf.feature(geo2 as any);
+                  const intersection = turf.intersect(turf.featureCollection([poly1, poly2]));
+                  if (intersection) {
+                    const center = turf.centroid(intersection);
+                    const displayArea = m.kesisen_alan_m2 != null && String(m.kesisen_alan_m2).trim() !== ''
+                      ? `${Number(m.kesisen_alan_m2).toLocaleString('tr-TR')} m²`
+                      : `${Math.round(turf.area(intersection)).toLocaleString('tr-TR')} m²`;
+
+                    features.push({
+                      geoJson: intersection.geometry,
+                      color: '#3b82f6',
+                      isHatched: true,
+                      areaText: displayArea,
+                      centroid: [center.geometry.coordinates[1], center.geometry.coordinates[0]] as [number, number]
+                    });
+                  }
+                }
+              } else { console.warn(`Mükerrer geometri bozuk/eksik: ${m.id}`); }
+            } catch (e) { console.warn(`Mükerrer geometri parse edilemedi: ${m.id}`); }
           }
         });
       } else if (activeTab === 'mukerrer') {
@@ -206,18 +211,18 @@ function App() {
 
         if (mukerrerWkt) {
           try {
-            if(parse(mukerrerWkt)) {
+            if (parse(mukerrerWkt)) {
               features.push({ wkt: mukerrerWkt, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${row.mukerrer_adano}/${row.mukerrer_parselno}` }); // Purple for Mukerrer
             } else { console.warn(`Mükerrer geometri bozuk/eksik: ${row.id}`); }
-          } catch(e) { console.warn(`Mükerrer geometri parse edilemedi: ${row.id}`); }
+          } catch (e) { console.warn(`Mükerrer geometri parse edilemedi: ${row.id}`); }
         }
-        
+
         if (thaWkt) {
           try {
-            if(parse(thaWkt)) {
-               features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}` });
+            if (parse(thaWkt)) {
+              features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}` });
             }
-          } catch(e) {}
+          } catch (e) { }
         }
 
         // Tescilli THA sayfasından da bulmayı dene
@@ -225,10 +230,10 @@ function App() {
         if (match && match.geom) {
           tescilliThaWkt = match.geom;
           try {
-            if(parse(tescilliThaWkt)) {
-               features.push({ wkt: tescilliThaWkt, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${match.adano}/${match.parselno}` }); // Green for THA
+            if (parse(tescilliThaWkt)) {
+              features.push({ wkt: tescilliThaWkt, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${match.adano}/${match.parselno}` }); // Green for THA
             }
-          } catch(e) {}
+          } catch (e) { }
         }
 
         let intersectionTargetWkt = tescilliThaWkt || thaWkt;
@@ -243,13 +248,16 @@ function App() {
               const poly2 = turf.feature(geo2 as any);
               const intersection = turf.intersect(turf.featureCollection([poly1, poly2]));
               if (intersection) {
-                const area = turf.area(intersection);
                 const center = turf.centroid(intersection);
+                const displayArea = row.kesisen_alan_m2 != null && String(row.kesisen_alan_m2).trim() !== ''
+                  ? `${Number(row.kesisen_alan_m2).toLocaleString('tr-TR')} m²`
+                  : `${Math.round(turf.area(intersection)).toLocaleString('tr-TR')} m²`;
+
                 features.push({
                   geoJson: intersection.geometry,
                   color: '#3b82f6',
                   isHatched: true,
-                  areaText: `${Math.round(area).toLocaleString('tr-TR')} m²`,
+                  areaText: displayArea,
                   centroid: [center.geometry.coordinates[1], center.geometry.coordinates[0]] as [number, number]
                 });
               }
@@ -258,7 +266,7 @@ function App() {
             console.error("Intersection failed", e);
           }
         }
-        
+
         // Mükerrer parselle kesişen diğer THA parsellerini bul
         if (mukerrerWkt) {
           try {

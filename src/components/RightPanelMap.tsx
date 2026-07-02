@@ -194,14 +194,21 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
             fillOpacity: f.isHatched ? 0.8 : 0.2 
           }} 
         >
-          {(f.label || f.adaParsel) && !f.isHatched && (
-            <Tooltip permanent direction="center" className="custom-map-label">
-              <div className="tooltip-content">
-                {f.label && <div className="tooltip-title">{f.label}</div>}
-                {f.adaParsel && <div className="tooltip-desc">{f.adaParsel}</div>}
-              </div>
-            </Tooltip>
-          )}
+          <Tooltip direction="top" offset={[0, -10]} className="custom-map-label" sticky>
+            <div className="tooltip-content">
+              {f.isHatched ? (
+                <>
+                  <div className="tooltip-title">Kesişen Alan</div>
+                  {f.areaText && <div className="tooltip-desc">{f.areaText}</div>}
+                </>
+              ) : (
+                <>
+                  {f.label && <div className="tooltip-title">{f.label}</div>}
+                  {f.adaParsel && <div className="tooltip-desc">{f.adaParsel}</div>}
+                </>
+              )}
+            </div>
+          </Tooltip>
         </GeoJSON>
         
         {f.isHatched && f.centroid && offsetLatLng && f.areaText && (
@@ -211,8 +218,8 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
               position={offsetLatLng} 
               icon={L.divIcon({ 
                 className: 'area-label-icon', 
-                html: `<div class="area-text-box">Kesişen Alan<br/><strong>${f.areaText}</strong></div>`,
-                iconSize: [120, 40]
+                html: `<div class="area-text-box">Kesişen Alan<strong>${f.areaText}</strong></div>`,
+                iconSize: [100, 32]
               })} 
             />
           </>
@@ -271,28 +278,28 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
 
             <LayersControl position="topright" collapsed={false}>
               {tescilliFeatures.length > 0 && (
-                <LayersControl.Overlay checked name="Tescilli THA">
+                <LayersControl.Overlay checked name="<span class='layer-lbl' data-color='#16a34a' style='color: #16a34a; font-weight: 600;'>Tescilli THA</span>">
                   <LayerGroup>
                     {tescilliFeatures.map((f, i) => renderFeature(f, i))}
                   </LayerGroup>
                 </LayersControl.Overlay>
               )}
               {mukerrerFeatures.length > 0 && (
-                <LayersControl.Overlay checked name="Mükerrer Parsel">
+                <LayersControl.Overlay checked name="<span class='layer-lbl' data-color='#9333ea' style='color: #9333ea; font-weight: 600;'>Mükerrer Parsel</span>">
                   <LayerGroup>
                     {mukerrerFeatures.map((f, i) => renderFeature(f, i))}
                   </LayerGroup>
                 </LayersControl.Overlay>
               )}
               {thaMukerrerFeatures.length > 0 && (
-                <LayersControl.Overlay name="THA (Mükerrer Tablo)">
+                <LayersControl.Overlay name="<span class='layer-lbl' data-color='#ea580c' style='color: #ea580c; font-weight: 600;'>THA (Mükerrer Tablo)</span>">
                   <LayerGroup>
                     {thaMukerrerFeatures.map((f, i) => renderFeature(f, i))}
                   </LayerGroup>
                 </LayersControl.Overlay>
               )}
               {kesisenFeatures.length > 0 && (
-                <LayersControl.Overlay checked name="Kesişen Alan">
+                <LayersControl.Overlay checked name="<span class='layer-lbl' data-color='#3b82f6' style='color: #3b82f6; font-weight: 600;'>Kesişen Alan</span>">
                   <LayerGroup>
                     {kesisenFeatures.map((f, i) => renderFeature(f, i))}
                   </LayerGroup>

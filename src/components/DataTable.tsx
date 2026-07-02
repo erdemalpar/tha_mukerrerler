@@ -17,7 +17,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
   const totalPages = Math.ceil(data.length / pageSize);
-  
+
   // Calculate current data chunk
   const currentData = useMemo(() => {
     const startIdx = (currentPage - 1) * pageSize;
@@ -33,7 +33,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
       const start = Math.min(lastSelectedIndex, globalIdx);
       const end = Math.max(lastSelectedIndex, globalIdx);
       const rowsInRange = data.slice(start, end + 1);
-      
+
       onRowsCheck(rowsInRange, true);
     } else {
       onRowCheck(row, !isChecked);
@@ -117,7 +117,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
           <h3>{type === 'tha' ? "Tescil Edilen THA'lar" : "Mükerrer Parseller"}</h3>
           <span className="badge">{data.length} Kayıt</span>
         </div>
-        
+
         <div className="page-size-selector">
           <label>Kayıt Sayısı: </label>
           <select value={pageSize} onChange={handlePageSizeChange}>
@@ -136,8 +136,8 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
             <tr>
               <th className="action-col">
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={isAllCurrentPageChecked}
                     onChange={handleSelectAllCurrentPage}
                     title="Sayfadaki tümünü seç"
@@ -154,19 +154,19 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
               const geomStr = row.mukerrer_parsel_geom || row.tha_geom || row.geom;
               const rowKey = String(row.id || idx);
               const isRowActive = checkedRowIds.has(rowKey);
-              
+
               return (
-                <tr 
-                  key={rowKey} 
+                <tr
+                  key={rowKey}
                   className={isRowActive ? 'active-row' : ''}
                   onClick={(e) => handleRowClick(e, row, idx)}
                   style={{ cursor: 'pointer' }}
                 >
                   <td className="action-col" onClick={(e) => e.stopPropagation()}>
                     {geomStr ? (
-                      <input 
-                        type="checkbox" 
-                        checked={isRowActive} 
+                      <input
+                        type="checkbox"
+                        checked={isRowActive}
                         onChange={(e) => onRowCheck(row, e.target.checked)}
                         className="row-checkbox"
                       />
@@ -186,14 +186,14 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
         <div className="pagination-info">
           Gösterilen: {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, data.length)} / Toplam: {data.length}
         </div>
-        
+
         {totalPages > 1 && (
           <div className="pagination-controls">
-            <button disabled={currentPage === 1} onClick={() => goToPage(1)}><ChevronsLeft size={16}/></button>
-            <button disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}><ChevronLeft size={16}/></button>
+            <button disabled={currentPage === 1} onClick={() => goToPage(1)}><ChevronsLeft size={16} /></button>
+            <button disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}><ChevronLeft size={16} /></button>
             <span className="page-indicator">Sayfa {currentPage} / {totalPages}</span>
-            <button disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}><ChevronRight size={16}/></button>
-            <button disabled={currentPage === totalPages} onClick={() => goToPage(totalPages)}><ChevronsRight size={16}/></button>
+            <button disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}><ChevronRight size={16} /></button>
+            <button disabled={currentPage === totalPages} onClick={() => goToPage(totalPages)}><ChevronsRight size={16} /></button>
           </div>
         )}
       </div>
