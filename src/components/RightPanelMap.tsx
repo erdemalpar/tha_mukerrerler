@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents, Tooltip, Polyline, Marker, LayersControl, LayerGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents, Tooltip, Popup, Polyline, Marker, LayersControl, LayerGroup } from 'react-leaflet';
 import { X } from 'lucide-react';
 import type { MapBaseLayer } from '../types';
 import { parse } from 'wellknown';
@@ -205,10 +205,27 @@ const RightPanelMap: React.FC<RightPanelMapProps> = ({ isOpen, features, focusFe
                 <>
                   {f.label && <div className="tooltip-title">{f.label}</div>}
                   {f.adaParsel && <div className="tooltip-desc">{f.adaParsel}</div>}
+                  {f.areaText && <div className="tooltip-area" style={{ marginTop: '4px', fontSize: '11px', fontWeight: 600, color: '#4b5563', padding: '2px 4px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>{f.areaText}</div>}
                 </>
               )}
             </div>
           </Tooltip>
+          <Popup className="custom-map-popup">
+            <div className="tooltip-content" style={{ margin: 0, padding: '4px', textAlign: 'center' }}>
+              {f.isHatched ? (
+                <>
+                  <div className="tooltip-title" style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#6b7280', marginBottom: '4px' }}>Kesişen Alan</div>
+                  {f.areaText && <div className="tooltip-desc" style={{ fontWeight: 700, fontSize: '14px', color: '#111827' }}>{f.areaText}</div>}
+                </>
+              ) : (
+                <>
+                  {f.label && <div className="tooltip-title" style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#6b7280', marginBottom: '2px' }}>{f.label}</div>}
+                  {f.adaParsel && <div className="tooltip-desc" style={{ fontWeight: 700, fontSize: '14px', color: '#111827' }}>{f.adaParsel}</div>}
+                  {f.areaText && <div className="tooltip-area" style={{ marginTop: '6px', fontSize: '11px', fontWeight: 600, color: '#4b5563', padding: '4px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>{f.areaText}</div>}
+                </>
+              )}
+            </div>
+          </Popup>
         </GeoJSON>
         
         {f.isHatched && f.centroid && offsetLatLng && f.areaText && (

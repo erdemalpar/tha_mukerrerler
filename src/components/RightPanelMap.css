@@ -211,3 +211,11 @@
 .leaflet-control-layers-overlays label:has(.layer-lbl[data-color="#3b82f6"]) input[type="checkbox"] {
   accent-color: #3b82f6;
 }
+
+/* Remove default focus outline on clickable map geometries */
+.leaflet-interactive:focus,
+.leaflet-interactive:active,
+.leaflet-container path:focus,
+.leaflet-container path:active {
+  outline: none !important;
+}

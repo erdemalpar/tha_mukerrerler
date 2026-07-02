@@ -10,6 +10,20 @@ import { parseCSVString } from './utils/dataParsers';
 import type { ThaRecord, MukerrerRecord, ViewTab, MapBaseLayer } from './types';
 import './App.css';
 
+const getWktArea = (wkt: string | undefined): string | undefined => {
+  if (!wkt) return undefined;
+  try {
+    const geo = parse(wkt);
+    if (geo) {
+      const area = turf.area(turf.feature(geo as any));
+      return `${Math.round(area).toLocaleString('tr-TR')} m²`;
+    }
+  } catch (e) {
+    return undefined;
+  }
+  return undefined;
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState<ViewTab>('mukerrer');
   const [baseLayer, setBaseLayer] = useState<MapBaseLayer>('google_satellite');
@@ -73,7 +87,7 @@ function App() {
   const allFeatures = useMemo(() => {
     let features: MapFeature[] = [];
     thaData.forEach(row => {
-      if (row.geom) features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}` });
+      if (row.geom) features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}`, areaText: getWktArea(row.geom) });
     });
 
     mukerrerData.forEach(row => {
@@ -81,10 +95,10 @@ function App() {
       let thaWkt = row.tha_geom;
 
       if (mukerrerWkt) {
-        features.push({ wkt: mukerrerWkt, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${row.mukerrer_adano}/${row.mukerrer_parselno}` });
+        features.push({ wkt: mukerrerWkt, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${row.mukerrer_adano}/${row.mukerrer_parselno}`, areaText: getWktArea(mukerrerWkt) });
       }
       if (thaWkt) {
-        features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}` });
+        features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}`, areaText: getWktArea(thaWkt) });
       } else {
         const match = thaData.find(t => t.adano == row.tha_ihdas_adano && t.parselno == row.tha_ihdas_parselno);
         if (match && match.geom) {
@@ -166,7 +180,7 @@ function App() {
         if (row.geom) {
           try {
             if (parse(row.geom)) {
-              features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}` }); // Green for THA
+              features.push({ wkt: row.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${row.adano}/${row.parselno}`, areaText: getWktArea(row.geom) }); // Green for THA
             } else { console.warn(`Tescilli THA geometri bozuk/eksik: ${row.id}`); }
           } catch (e) { console.warn(`Tescilli THA parse edilemedi: ${row.id}`); }
         }
@@ -177,7 +191,7 @@ function App() {
           if (m.mukerrer_parsel_geom) {
             try {
               if (parse(m.mukerrer_parsel_geom)) {
-                features.push({ wkt: m.mukerrer_parsel_geom, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${m.mukerrer_adano}/${m.mukerrer_parselno}` });
+                features.push({ wkt: m.mukerrer_parsel_geom, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${m.mukerrer_adano}/${m.mukerrer_parselno}`, areaText: getWktArea(m.mukerrer_parsel_geom) });
 
                 const geo1 = parse(row.geom);
                 const geo2 = parse(m.mukerrer_parsel_geom);
@@ -212,7 +226,7 @@ function App() {
         if (mukerrerWkt) {
           try {
             if (parse(mukerrerWkt)) {
-              features.push({ wkt: mukerrerWkt, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${row.mukerrer_adano}/${row.mukerrer_parselno}` }); // Purple for Mukerrer
+              features.push({ wkt: mukerrerWkt, color: '#9333ea', label: 'Mükerrer Parsel', adaParsel: `${row.mukerrer_adano}/${row.mukerrer_parselno}`, areaText: getWktArea(mukerrerWkt) }); // Purple for Mukerrer
             } else { console.warn(`Mükerrer geometri bozuk/eksik: ${row.id}`); }
           } catch (e) { console.warn(`Mükerrer geometri parse edilemedi: ${row.id}`); }
         }
@@ -220,7 +234,7 @@ function App() {
         if (thaWkt) {
           try {
             if (parse(thaWkt)) {
-              features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}` });
+              features.push({ wkt: thaWkt, color: '#ea580c', label: 'THA (Mükerrer Tablo)', adaParsel: `${row.tha_ihdas_adano}/${row.tha_ihdas_parselno}`, areaText: getWktArea(thaWkt) });
             }
           } catch (e) { }
         }
@@ -231,7 +245,7 @@ function App() {
           tescilliThaWkt = match.geom;
           try {
             if (parse(tescilliThaWkt)) {
-              features.push({ wkt: tescilliThaWkt, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${match.adano}/${match.parselno}` }); // Green for THA
+              features.push({ wkt: tescilliThaWkt, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${match.adano}/${match.parselno}`, areaText: getWktArea(tescilliThaWkt) }); // Green for THA
             }
           } catch (e) { }
         }
@@ -283,7 +297,7 @@ function App() {
                     const tPoly = turf.feature(tGeo as any);
                     const isIntersecting = turf.intersect(turf.featureCollection([mPoly, tPoly]));
                     if (isIntersecting) {
-                      features.push({ wkt: t.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${t.adano}/${t.parselno}` });
+                      features.push({ wkt: t.geom, color: '#16a34a', label: 'Tescilli THA', adaParsel: `${t.adano}/${t.parselno}`, areaText: getWktArea(t.geom) });
                     }
                   }
                 }
