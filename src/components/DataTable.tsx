@@ -16,6 +16,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -40,11 +41,51 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
 
   const totalPages = Math.ceil(data.length / pageSize);
 
+  const sortedData = useMemo(() => {
+    let sortableItems = [...data];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+        
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+
+        const aNum = Number(aValue);
+        const bNum = Number(bValue);
+        if (!isNaN(aNum) && !isNaN(bNum) && String(aValue).trim() !== '' && String(bValue).trim() !== '') {
+          aValue = aNum;
+          bValue = bNum;
+        } else {
+          aValue = String(aValue).toLowerCase();
+          bValue = String(bValue).toLowerCase();
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [data, sortConfig]);
+
   // Calculate current data chunk
   const currentData = useMemo(() => {
     const startIdx = (currentPage - 1) * pageSize;
-    return data.slice(startIdx, startIdx + pageSize);
-  }, [data, currentPage, pageSize]);
+    return sortedData.slice(startIdx, startIdx + pageSize);
+  }, [sortedData, currentPage, pageSize]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   const handleRowClick = (e: React.MouseEvent, row: any, idx: number) => {
     const globalIdx = (currentPage - 1) * pageSize + idx;
@@ -73,21 +114,6 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
     setCurrentPage(1); // Reset to first page
   };
 
-  const thaColumns = [
-    { key: 'ilad', label: 'İl' },
-    { key: 'ilcead', label: 'İlçe' },
-    { key: 'mahallead', label: 'Mahalle' },
-    { key: 'adano', label: 'Ada No' },
-    { key: 'parselno', label: 'Parsel No' },
-    { key: 'yuzolcum', label: 'Yüzölçüm' },
-    { key: 'kad_basvuruno', label: 'Kad. Başvuru No' },
-    { key: 'kad_basvurualinmatarihi', label: 'Kad. Başvuru Tarihi' },
-    { key: 'kad_fenkayitno', label: 'Kad. Fen Kayıt No' },
-    { key: 'kad_fenkayittarih', label: 'Kad. Fen Kayıt Tarihi' },
-    { key: 'tapu_tesciltarih', label: 'Tescil Tarihi' },
-    { key: 'tapu_tescilyevmiyeno', label: 'Tescil Yevmiye No' }
-  ];
-
   const mukerrerColumns = [
     { key: 'ilad', label: 'İl' },
     { key: 'ilcead', label: 'İlçe' },
@@ -97,6 +123,7 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
     { key: 'mukerrer_adano', label: 'Mükerrer Ada' },
     { key: 'mukerrer_parselno', label: 'Mükerrer Parsel' },
     { key: 'kesisen_alan_m2', label: 'Kesişen Alan (m²)' },
+    { key: 'islemtanimad', label: 'İşlem Adı' },
     { key: 'kad_basvuruno', label: 'Kad. Başvuru No' },
     { key: 'kad_basvuru_olusturmatarihi', label: 'Kad. Başvuru Tarihi' },
     { key: 'kad_fenkayitno', label: 'Kad. Fen Kayıt No' },
@@ -107,6 +134,25 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
     { key: 'mukerrer_parsel_durum', label: 'Durum' },
     { key: 'mukerrer_parsel_onaydurum', label: 'Onay Durumu' }
   ];
+
+
+  const thaColumns = [
+    { key: 'ilad', label: 'İl' },
+    { key: 'ilcead', label: 'İlçe' },
+    { key: 'mahallead', label: 'Mahalle' },
+    { key: 'adano', label: 'Ada No' },
+    { key: 'parselno', label: 'Parsel No' },
+    { key: 'yuzolcum', label: 'Yüzölçüm' },
+    { key: 'islemtanimad', label: 'İşlem Adı' },
+    { key: 'kad_basvuruno', label: 'Kad. Başvuru No' },
+    { key: 'kad_basvurualinmatarihi', label: 'Kad. Başvuru Tarihi' },
+    { key: 'kad_fenkayitno', label: 'Kad. Fen Kayıt No' },
+    { key: 'kad_fenkayittarih', label: 'Kad. Fen Kayıt Tarihi' },
+    { key: 'tapu_tesciltarih', label: 'Tescil Tarihi' },
+    { key: 'tapu_tescilyevmiyeno', label: 'Tescil Yevmiye No' }
+  ];
+
+
 
   const columns = type === 'tha' ? thaColumns : mukerrerColumns;
 
@@ -168,7 +214,23 @@ const DataTable: React.FC<DataTableProps> = ({ type, data, checkedRowIds, onRowC
                   <span></span>
                 </div>
               </th>
-              {columns.map(col => <th key={col.key}>{col.label}</th>)}
+              {columns.map(col => (
+                <th 
+                  key={col.key} 
+                  onClick={() => requestSort(col.key)}
+                  style={{ cursor: 'pointer', userSelect: 'none' }}
+                  title="Sıralamak için tıklayın"
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {col.label}
+                    {sortConfig?.key === col.key && (
+                      <span style={{ fontSize: '0.8em', color: 'var(--primary-color)' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>

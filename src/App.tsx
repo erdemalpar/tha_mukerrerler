@@ -32,7 +32,7 @@ const getWktCentroid = (wkt: string | undefined): [number, number] | undefined =
       const center = turf.centroid(turf.feature(geo as any));
       return [center.geometry.coordinates[1], center.geometry.coordinates[0]];
     }
-  } catch (e) {}
+  } catch (e) { }
   return undefined;
 };
 
@@ -55,8 +55,8 @@ function App() {
     const loadDefaults = async () => {
       try {
         const [thaRes, mukerrerRes] = await Promise.all([
-          fetch(import.meta.env.BASE_URL + 'tesciledilen_thalar.csv'),
-          fetch(import.meta.env.BASE_URL + 'kesisen_thalar.csv')
+          fetch(import.meta.env.BASE_URL + 'Tescil_THA_03072026.csv'),
+          fetch(import.meta.env.BASE_URL + 'MukerrerParseller_03072026.csv')
         ]);
 
         if (thaRes.ok) {

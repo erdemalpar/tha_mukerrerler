@@ -6,6 +6,7 @@ export interface ThaRecord {
   adano: string | number;
   parselno: string | number;
   yuzolcum: string | number;
+  islemtanimad: string;
   kad_basvuruno: string;
   kad_basvurualinmatarihi: string;
   kad_fenkayitno: string;
@@ -25,6 +26,7 @@ export interface MukerrerRecord {
   mukerrer_adano: string | number;
   mukerrer_parselno: string | number;
   kesisen_alan_m2: string | number;
+  islemtanimad: string;
   kad_basvuruno: string;
   kad_basvuru_olusturmatarihi: string;
   kad_fenkayitno: string;

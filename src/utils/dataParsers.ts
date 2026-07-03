@@ -6,7 +6,7 @@ export const parseCSVString = <T>(text: string): Promise<T[]> => {
     let lines = text.split(/\r?\n/);
     let startIndex = 0;
     let delimiter = ',';
-    
+
     // Find the first line that looks like a header (contains delimiters)
     for (let i = 0; i < Math.min(lines.length, 10); i++) {
       const semiCount = (lines[i].match(/;/g) || []).length;
@@ -17,7 +17,7 @@ export const parseCSVString = <T>(text: string): Promise<T[]> => {
         break;
       }
     }
-    
+
     const validText = lines.slice(startIndex).join('\n');
 
     Papa.parse(validText, {
@@ -29,44 +29,46 @@ export const parseCSVString = <T>(text: string): Promise<T[]> => {
         const h = original.toLowerCase()
           .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ü/g, 'u')
           .replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ç/g, 'c');
-        
+
         const cleanH = h.replace(/[\s_]/g, '');
 
         if (cleanH === 'ilad' || cleanH === 'iladi' || cleanH === 'il') return 'ilad';
         if (cleanH === 'ilcead' || cleanH === 'ilceadi' || cleanH === 'ilce') return 'ilcead';
         if (cleanH === 'mahallead' || cleanH === 'mahalleadi' || cleanH === 'mahalle' || cleanH === 'mah') return 'mahallead';
-        
+
         if (cleanH === 'thaihdasadano' || cleanH === 'thaada' || cleanH === 'thaadano' || cleanH === 'thaihdasada') return 'tha_ihdas_adano';
         if (cleanH === 'thaihdasparselno' || cleanH === 'thaparsel' || cleanH === 'thaparselno' || cleanH === 'thaihdasparsel') return 'tha_ihdas_parselno';
-        
+
         if (cleanH === 'mukerreradano' || cleanH === 'mukerrerada') return 'mukerrer_adano';
         if (cleanH === 'mukerrerparselno' || cleanH === 'mukerrerparsel') return 'mukerrer_parselno';
-        
+
         if (cleanH === 'adano' || cleanH === 'ada') return 'adano';
         if (cleanH === 'parselno' || cleanH === 'parsel') return 'parselno';
-        
+
         if (cleanH === 'yuzolcum' || cleanH === 'alan' || cleanH === 'hesapalan') return 'yuzolcum';
-        
+
+        if (cleanH === 'islemtanimad' || cleanH === 'islemtanim') return 'islemtanimad';
+
         if (cleanH === 'kadbasvuruno' || cleanH === 'basvuruno') return 'kad_basvuruno';
         if (cleanH === 'kadbasvurualinmatarihi' || cleanH === 'basvurualinmatarihi') return 'kad_basvurualinmatarihi';
         if (cleanH === 'kadbasvuruolusturmatarihi' || cleanH === 'basvurutarihi') return 'kad_basvuru_olusturmatarihi';
-        
+
         if (cleanH === 'kadfenkayitno' || cleanH === 'fenkayitno') return 'kad_fenkayitno';
         if (cleanH === 'kadfenkayittarih' || cleanH === 'fenkayittarihi') return 'kad_fenkayittarih';
-        
+
         if (cleanH === 'taputesciltarih') return 'tapu_tesciltarih';
         if (cleanH === 'tesciltarih') return 'tesciltarih';
         if (cleanH === 'taputescilyevmiyeno' || cleanH === 'tescilyevmiyeno' || cleanH === 'yevmiyeno') return 'tescilyevmiyeno';
         if (cleanH === 'olusanparselid' || cleanH === 'parselid') return 'olusanparselid';
-        
+
         if (cleanH === 'kesisenalanm2' || cleanH === 'kesisenalan') return 'kesisen_alan_m2';
         if (cleanH === 'durum' || cleanH === 'mukerrerparseldurum') return 'mukerrer_parsel_durum';
         if (cleanH === 'onaydurum' || cleanH === 'mukerrerparselonaydurum') return 'mukerrer_parsel_onaydurum';
-        
+
         if (cleanH === 'mukerrerparselgeom') return 'mukerrer_parsel_geom';
         if (cleanH === 'thageom') return 'tha_geom';
         if (cleanH === 'wkt' || cleanH === 'geometry' || cleanH === 'geom') return 'geom';
-        
+
         return original;
       },
       complete: (results) => {
