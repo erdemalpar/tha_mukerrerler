@@ -82,17 +82,17 @@ function App() {
 
   const filteredThaData = useMemo(() => {
     if (!searchQuery) return thaData;
-    const lowerQuery = searchQuery.toLowerCase();
+    const lowerQuery = searchQuery.toLocaleLowerCase('tr-TR');
     return thaData.filter(row =>
-      Object.values(row).some(val => val != null && String(val).toLowerCase().includes(lowerQuery))
+      Object.values(row).some(val => val != null && String(val).toLocaleLowerCase('tr-TR').includes(lowerQuery))
     );
   }, [thaData, searchQuery]);
 
   const filteredMukerrerData = useMemo(() => {
     if (!searchQuery) return mukerrerData;
-    const lowerQuery = searchQuery.toLowerCase();
+    const lowerQuery = searchQuery.toLocaleLowerCase('tr-TR');
     return mukerrerData.filter(row =>
-      Object.values(row).some(val => val != null && String(val).toLowerCase().includes(lowerQuery))
+      Object.values(row).some(val => val != null && String(val).toLocaleLowerCase('tr-TR').includes(lowerQuery))
     );
   }, [mukerrerData, searchQuery]);
 

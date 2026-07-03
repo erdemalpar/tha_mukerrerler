@@ -8,43 +8,54 @@ interface SqlModalProps {
 }
 
 const THA_SQL = `
-select 
-	tib.ilad ,tib.ilcead, tib.mahallead,p.adano,p.parselno, ROUND((p.kadastroalan)::numeric, 2) as yuzolcum
-	,tbl2.basvuruno as kad_basvuruno,tbl2.olusturmatarihi as kad_basvurualinmatarihi
-	,tbl2.fenkayitno as kad_fenkayitno,tbl2.fenkayittarih as kad_fenkayittarih
-	,tbl2.tesciltarih as tapu_tesciltarih,tbl2.tescilyevmiyeno as tapu_tescilyevmiyeno
-       ,p.geom 
-from islem.islemolusanparseller iop
-inner join parseller p on p.id=iop.megsisparselref 
-inner join tapuidaribirimler tib on tib.mahalleid=p.tapumahalleref 
-inner join (
- SELECT * FROM dblink(
-        'host=TK-PGDB.tkgm.gov.tr port=**** user=******* password=****** dbname=tkgm_fenkayit',
-        'SELECT fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
+SELECT 
+    tib.ilad,
+    tib.ilcead, 
+    tib.mahallead,
+    p.adano,
+    p.parselno, 
+    ROUND((p.kadastroalan)::numeric, 2) as yuzolcum,
+    tbl2.islemtanim as islemtanimad, -- <-- İstediğiniz kolon buraya eklendi
+    tbl2.basvuruno as kad_basvuruno,
+    tbl2.olusturmatarihi as kad_basvurualinmatarihi,
+    tbl2.fenkayitno as kad_fenkayitno,
+    tbl2.fenkayittarih as kad_fenkayittarih,
+    tbl2.tesciltarih as tapu_tesciltarih,
+    tbl2.tescilyevmiyeno as tapu_tescilyevmiyeno,
+    p.geom 
+FROM islem.islemolusanparseller iop
+INNER JOIN parseller p ON p.id = iop.megsisparselref 
+INNER JOIN tapuidaribirimler tib ON tib.mahalleid = p.tapumahalleref 
+INNER JOIN (
+    SELECT * FROM dblink(
+        'host=TK-PGDB.tkgm.gov.tr port=**** user=********* password=******** dbname=tkgm_fenkayit',
+        'SELECT it.ad as islemtanim, fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
          FROM islemfenkayit ifk
          INNER JOIN fenkayit fk ON fk.id = ifk.fenkayitref 
-         WHERE ifk.islemtanimref = 1342 
+         INNER JOIN islemtanim it ON it.id = ifk.islemtanimref
+         WHERE ifk.islemtanimref IN (1342, 1344, 1354) 
            AND ifk.durum = 1 
            AND fk.durum = 1 
            AND fk.asamadurum = 6'
-    ) AS tbl(basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
-) tbl2 on  tbl2.islemfenkayitref = iop.islemfenkayitref
-where iop.durum =3 and p.durum =3
-order by tib.ilad , tib.ilcead, tib.mahallead ,tbl2.basvuruno;`;
+    ) AS tbl(islemtanim text, basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
+) tbl2 ON tbl2.islemfenkayitref = iop.islemfenkayitref
+WHERE iop.durum = 3 AND p.durum = 3
+ORDER BY tib.ilad, tib.ilcead, tib.mahallead, tbl2.basvuruno;`;
 
 const MUKERRER_SQL = `
 WITH uzak_veri AS (
     -- dblink sorgusunu CTE (With) içine alarak lokalde sadece 1 kere çalıştırır
     SELECT * FROM dblink(
         'host=TK-PGDB.tkgm.gov.tr port=**** user=********* password=******** dbname=tkgm_fenkayit',
-        'SELECT fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
+        'SELECT it.ad as islemtanim,fk.id, ifk.id, fk.olusturmatarihi, fk.sirano, fk.fenkayittarih, fk.tescilyevmiyeno, fk.tesciltarih 
          FROM islemfenkayit ifk
-         INNER JOIN fenkayit fk ON fk.id = ifk.fenkayitref 
-         WHERE ifk.islemtanimref = 1342 
+         INNER JOIN fenkayit fk ON fk.id = ifk.fenkayitref
+		 INNER JOIN islemtanim it ON it.id = ifk.islemtanimref 
+         WHERE ifk.islemtanimref IN (1342, 1344, 1354) 
            AND ifk.durum = 1 
            AND fk.durum = 1 
            AND fk.asamadurum = 6'
-    ) AS tbl(basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
+    ) AS tbl(islemtanim text,basvuruno bigint, islemfenkayitref bigint, olusturmatarihi timestamp, fenkayitno bigint, fenkayittarih timestamp, tescilyevmiyeno bigint, tesciltarih timestamp)
 )
 SELECT 
 	tib.ilad,
@@ -59,6 +70,7 @@ SELECT
         ST_Area(ST_Intersection(p.geom, pk.geom)::geography)::numeric,
         2
     ) AS kesisen_alan_m2,
+    tbl2.islemtanim as islemtanimad, -- <-- İstediğiniz kolon buraya eklendi
 	tbl2.basvuruno,
     tbl2.olusturmatarihi as kad_basvuru_olusturmatarihi, 
     tbl2.fenkayitno as kad_fenkayitno,
@@ -78,7 +90,8 @@ INNER JOIN tapuidaribirimler tib ON tib.mahalleid = pk.tapumahalleref
 WHERE iop.durum = 3
   AND p.durum = 3 
   AND p.onaydurum = 1
-and ST_Area(ST_Intersection(p.geom, pk.geom)::geography) > 100;`;
+and ST_Area(ST_Intersection(p.geom, pk.geom)::geography) > 100
+order by tib.ilad,tib.ilcead,tib.mahallead;`;
 
 const SqlModal: React.FC<SqlModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
